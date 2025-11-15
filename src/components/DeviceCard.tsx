@@ -8,6 +8,14 @@ interface DeviceCardProps {
 }
 
 const DeviceCard: React.FC<DeviceCardProps> = ({ device, isSelected, onToggleSelect }) => {
+  // Extract model number from device name (e.g., "H6008" from the name)
+  const modelMatch = device.name.match(/H\d{4}/i);
+  const modelNumber = modelMatch ? modelMatch[0].toLowerCase() : null;
+  
+  // Try device-specific image, fallback to H6008
+  const imagePath = modelNumber ? `./${modelNumber}.jpg` : './h6008.jpg';
+  const fallbackImage = './h6008.jpg';
+
   return (
     <div 
       className={`flex-shrink-0 w-56 bg-gray-800 rounded-xl p-6 cursor-pointer transition-all ${
@@ -19,7 +27,13 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, isSelected, onToggleSel
         {/* Device Image */}
         <div className="w-30 h-30 rounded-xl overflow-hidden bg-gray-700 flex items-center justify-center">
           <img 
-            src="./light.jpg" 
+            src={imagePath}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== fallbackImage) {
+                target.src = fallbackImage;
+              }
+            }}
             alt="Govee Light" 
             className="w-full h-full object-cover"
           />
