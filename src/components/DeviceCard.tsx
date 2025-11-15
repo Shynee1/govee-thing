@@ -17,9 +17,9 @@ const DeviceCard: React.FC<DeviceCardProps> = ({ device, isSelected, onToggleSel
     >
       <div className="flex flex-col items-center gap-4">
         {/* Device Image */}
-        <div className="w-36 h-36 rounded-xl overflow-hidden bg-gray-700 flex items-center justify-center">
+        <div className="w-30 h-30 rounded-xl overflow-hidden bg-gray-700 flex items-center justify-center">
           <img 
-            src="/light.jpg" 
+            src="./light.jpg" 
             alt="Govee Light" 
             className="w-full h-full object-cover"
           />
