@@ -39,6 +39,13 @@ export class GoveeService {
     });
   }
 
+  public static async setColorTemperature(devices: any[], kelvin: number): Promise<void> {
+    DeskThing.send({
+      type: 'setColorTemperature',
+      payload: { deviceIds: devices.map(device => device.id), kelvin }
+    });
+  }
+
   public static async disconnect(devices: any[]): Promise<void> {
     DeskThing.send({
       type: 'disconnect',

@@ -1,7 +1,9 @@
 import { DeskThing } from "@deskthing/server";
 import { AppSettings, DESKTHING_EVENTS, SETTING_TYPES } from "@deskthing/types";
 import { Bluetooth } from "webbluetooth";
-import { GoveeDevice, SERVICE_UUID } from "./GoveeDevice";
+import { GoveeDevice } from "./GoveeDevice";
+import { GoveeDeviceBluetooth, SERVICE_UUID } from "./GoveeDeviceBluetooth";
+import { GoveeDeviceLAN } from "./GoveeDeviceLAN";
 
 const devices = new Map<string, GoveeDevice>();
 const bluetooth = new Bluetooth();
@@ -10,9 +12,9 @@ let keepAliveInterval: NodeJS.Timeout | null = null;
 
 function sendDeviceList() {
   const deviceList = Array.from(devices.values()).map(device => ({
-    id: device['id'],
-    name: device['name'],
-    connected: device['connected']
+    id: device.getId(),
+    name: device.getName(),
+    connected: device.isConnected()
   }));
 
   DeskThing.send({
@@ -21,13 +23,13 @@ function sendDeviceList() {
   });
 }
 
-async function scanForDevices() {
+async function scanForBluetoothDevices() {
   if (isScanning) {
     console.log("Already scanning for devices.");
     return;
   }
 
-  console.log("Scanning for Govee devices...");
+  console.log("Scanning for Govee Bluetooth devices...");
   isScanning = true;
   DeskThing.send({
     type: "scanStatus",
@@ -35,28 +37,22 @@ async function scanForDevices() {
   });
 
   try {
-    const device = await bluetooth.requestDevice({
-      filters: [
-        {namePrefix: "Govee_" },
-        {namePrefix: "ihoment_" },
-      ],
-      optionalServices: [SERVICE_UUID],
-    });
+    const result = await GoveeDeviceBluetooth.scanForDevices(bluetooth);
 
-    if (!device) {
-      console.log("No devices found.");
+    if (!result) {
+      console.log("No Bluetooth devices found.");
       return;
     }
 
-    const goveeDevice = new GoveeDevice(device, device.name, device.id);
+    const goveeDevice = new GoveeDeviceBluetooth(result.device, result.name, result.id);
 
-    devices.set(device.id, goveeDevice);
-    console.log(`Discovered device: ${device.name} (${device.id})`);
+    devices.set(result.id, goveeDevice);
+    console.log(`Discovered Bluetooth device: ${result.name} (${result.id})`);
 
     sendDeviceList();
 
   } catch (error) {
-    console.error("Error scanning for devices:", error);
+    console.error("Error scanning for Bluetooth devices:", error);
   } finally {
     DeskThing.send({
       type: "scanStatus",
@@ -64,6 +60,52 @@ async function scanForDevices() {
     });
     isScanning = false;
   }
+}
+
+async function scanForLANDevices() {
+  if (isScanning) {
+    console.log("Already scanning for devices.");
+    return;
+  }
+
+  console.log("Scanning for Govee LAN devices...");
+  isScanning = true;
+  DeskThing.send({
+    type: "scanStatus",
+    payload: { scanning: true }
+  });
+
+  try {
+    const lanDevices = await GoveeDeviceLAN.scanForDevices(5000);
+
+    if (lanDevices.length === 0) {
+      console.log("No LAN devices found.");
+      return;
+    }
+
+    for (const deviceInfo of lanDevices) {
+      const goveeDevice = new GoveeDeviceLAN(deviceInfo);
+      devices.set(deviceInfo.device, goveeDevice);
+      console.log(`Discovered LAN device: ${deviceInfo.sku} (${deviceInfo.device})`);
+    }
+
+    sendDeviceList();
+
+  } catch (error) {
+    console.error("Error scanning for LAN devices:", error);
+  } finally {
+    DeskThing.send({
+      type: "scanStatus",
+      payload: { scanning: false }
+    });
+    isScanning = false;
+  }
+}
+
+async function scanForDevices() {
+  // Scan for both Bluetooth and LAN devices
+  await scanForBluetoothDevices();
+  await scanForLANDevices();
 }
 
 
@@ -138,6 +180,26 @@ const start = async () => {
       const device = devices.get(id);
       if (device) {
         const success = await device.setColor(color.r, color.g, color.b);
+        results.push(success);
+      }
+    }
+
+    DeskThing.send({
+      type: "commandResult",
+      payload: { results }
+    });
+  });
+
+  DeskThing.on('setColorTemperature', async(msg: any) => {
+    const payload = msg.payload;
+    const deviceIds = payload.deviceIds as string[];
+    const kelvin = payload.kelvin as number;
+
+    const results: boolean[] = [];
+    for (const id of deviceIds) {
+      const device = devices.get(id);
+      if (device) {
+        const success = await device.setColorTemperature(kelvin);
         results.push(success);
       }
     }
