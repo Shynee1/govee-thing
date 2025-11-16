@@ -2,6 +2,8 @@
 
 A DeskThing app for controlling Govee smart lights via Bluetooth and LAN (Wi-Fi) connections.
 
+![](https://github.com/Shynee1/Govee-Thing/blob/main/media/demo_cropped.jpg)
+
 ## Features
 
 - 🔵 **Bluetooth Support** - Control Govee devices via BLE (Web Bluetooth API)
