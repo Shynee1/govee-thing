@@ -11,7 +11,6 @@ A DeskThing app for controlling Govee smart lights via Bluetooth and LAN (Wi-Fi)
 - 🌡️ **Color Temperature** - Adjust warmth from 2700K (warm) to 6500K (cool)
 - 🔌 **Power Control** - Turn lights on/off
 - 📱 **Multi-Device** - Connect and control multiple devices simultaneously
-- 🎯 **Unified Interface** - Same controls work for both Bluetooth and LAN devices
 
 ## Installation
 
@@ -54,14 +53,12 @@ A DeskThing app for controlling Govee smart lights via Bluetooth and LAN (Wi-Fi)
 ## Supported Devices
 
 ### Bluetooth Devices
-All Govee devices with Bluetooth connectivity are supported, including:
-- Devices with model prefix `Govee_`
-- Devices with model prefix `ihoment_`
+Most Govee devices with Bluetooth connectivity are supported, including:
 
 Common Bluetooth models include:
 - H6199, H6182, H6104, H6109, H6110
 - H6127, H6141, H6142, H6143, H6144, H6148
-- H6159, H6163, H6188, H6195
+- H6159, H6163, H6188, H6195, H6008
 - And many more Govee Bluetooth-enabled devices
 
 ### LAN (Wi-Fi) Devices
